@@ -167,10 +167,10 @@ final class ScriptMerger {
 			final int qtgmcCommandIndex = scriptFileCommands.indexOf(qtgmcCommand.get());
 			
 			final AvsScriptCommand resizeWidthCommand = new AvsScriptCommand(
-					AvsScriptCommand.RESIZE, AvsScriptCommand.RESIZE + clipDimension.getWidth() 
+					AvsScriptCommand.RESIZE, clipName + "=" + clipName + "." + AvsScriptCommand.RESIZE + clipDimension.getWidth() 
 					+ "," + clipName + ".height)");
 			final AvsScriptCommand resizeHeightCommand = new AvsScriptCommand(
-					AvsScriptCommand.RESIZE, AvsScriptCommand.RESIZE + clipName 
+					AvsScriptCommand.RESIZE, clipName + "=" + clipName + "." + AvsScriptCommand.RESIZE + clipName 
 					+ ".width," + clipDimension.getHeight() + ")");
 			
 			//Insert height resizing after the deinterlacing

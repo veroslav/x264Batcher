@@ -19,16 +19,20 @@
 */
 package org.matic.x264batcher.encoder;
 
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry.Severity;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry.Severity;
+import org.matic.x264batcher.exception.EncoderException;
 import org.matic.x264batcher.model.EncodingProgressView;
 import org.matic.x264batcher.model.SegmentEncoderResult;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * The x264 encoding process. It parallelizes input AVS files for more efficient encoding.
@@ -106,15 +110,38 @@ final class AvsEncoder {
 	 * Start an encoding process.
 	 * 
 	 * @param jobCommands x264.exe commands for used for segment encoding
-	 * @throws InterruptedException If the encoding is interrupted/cancelled
+	 * @throws EncoderException If the encoding is interrupted/cancelled or failed
 	 */
-	void encode(final List<String> jobCommands) throws InterruptedException {
+	void encode(final List<String> jobCommands) throws EncoderException {
 		jobCommands.forEach(cmd -> jobSegments.add(new SegmentEncoder(cmd, logger)));
 
 		//Encode segments to x264
-		final List<Future<SegmentEncoderResult>> completedTasks = jobExecutor.invokeAll(jobSegments);
-		jobExecutor.shutdownNow();
-		
+		final ExecutorCompletionService<SegmentEncoderResult> completionService = new ExecutorCompletionService<>(jobExecutor);
+		final List<Future<SegmentEncoderResult>> futureTasks =jobSegments.stream().map(
+				segment -> completionService.submit(segment)).collect(Collectors.toList());
+
+		try {
+			while(futureTasks.size() > 0) {
+               	try {
+					final Future<SegmentEncoderResult> completedTask = completionService.take();
+					futureTasks.remove(completedTask);
+					final SegmentEncoderResult encoderResult = completedTask.get();
+					if(encoderResult.getException() != null) {
+						throw new EncoderException(encoderResult.getException().getMessage());
+					} else if(encoderResult.getExitCode() != SegmentEncoderResult.SUCCESS) {
+						throw new EncoderException("Exit code was " + encoderResult.getExitCode());
+					}
+                } catch (final ExecutionException | InterruptedException e) {
+					throw new EncoderException(e.getMessage());
+				}
+			}
+		} finally {
+			for(final Future<SegmentEncoderResult> futureTask : futureTasks){
+				futureTask.cancel(true);
+			}
+			jobExecutor.shutdownNow();
+		}
+
 		logger.log(Severity.INFO, "Encoding completed [ " + jobCommands.size() + " segments encoded ]");
 	}
 }

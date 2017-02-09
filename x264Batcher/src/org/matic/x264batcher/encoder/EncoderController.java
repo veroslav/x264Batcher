@@ -30,8 +30,8 @@ import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry.Severity;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry.Severity;
 import org.matic.x264batcher.gui.ProgressPoller;
 import org.matic.x264batcher.gui.model.QueuedJob;
 import org.matic.x264batcher.model.AvsSegment;

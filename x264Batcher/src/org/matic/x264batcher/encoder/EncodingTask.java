@@ -20,8 +20,8 @@
 package org.matic.x264batcher.encoder;
 
 import javafx.concurrent.Task;
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry.Severity;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry.Severity;
 import org.matic.x264batcher.model.AvsSegment;
 import org.matic.x264batcher.model.EncoderJob;
 import org.matic.x264batcher.model.EncoderParameters;
@@ -81,8 +81,8 @@ final class EncodingTask extends Task<Void> {
 		logger.log(Severity.INFO, "All segments encoded: Job = " + jobName);
 		
 		//Merge encoded segment files
-		final SegmentMerger mergerJob = new SegmentMerger(
-				avsSegments, encoderJob.getJobParameters(), encoderParameters.getMkvMergeExecutablePath());
+		final SegmentMerger mergerJob = new SegmentMerger(avsSegments,
+				encoderJob.getJobParameters(), encoderParameters.getMkvMergeExecutablePath());
 		
 		logger.log(Severity.INFO, "Merging segments: Job = " + jobName + ", command = [ " +
 				mergerJob.getCommand() + " ]");

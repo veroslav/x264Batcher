@@ -27,8 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry;
 import org.matic.x264batcher.exception.EncoderException;
 import org.matic.x264batcher.model.AvsInputFile;
 import org.matic.x264batcher.model.AvsScriptCommand;
@@ -75,7 +75,6 @@ public final class AvsParser {
 								line.indexOf(AvsScriptCommand.DGSOURCE_IDENTIFIER) + 
 								AvsScriptCommand.DGSOURCE_IDENTIFIER.length(), line.lastIndexOf("\"")));
 						scriptCommands.add(new AvsScriptCommand(AvsScriptCommand.DGSOURCE_IDENTIFIER, line));
-						continue;
 					}
 					//Check whether it is a reference to a DGDecode
 					else if(line.contains(AvsScriptCommand.DGDECODE_IDENTIFIER) && line.contains(D2VParser.D2V_FILE_EXTENSION)) {
@@ -84,10 +83,10 @@ public final class AvsParser {
 								line.substring(line.indexOf(AvsScriptCommand.DGDECODE_IDENTIFIER) + 
 										AvsScriptCommand.DGDECODE_IDENTIFIER.length(), line.lastIndexOf("\"")));	
 						scriptCommands.add(new AvsScriptCommand(AvsScriptCommand.DGDECODE_IDENTIFIER, line));
-						continue;
 					}				
 					if(parsedIndexedFile != null) {
 						estimatedFrameCount = parsedIndexedFile.getFrameCount();
+						continue;
 					}
 				}
 				scriptCommands.add(new AvsScriptCommand(AvsScriptCommand.GENERIC, line));

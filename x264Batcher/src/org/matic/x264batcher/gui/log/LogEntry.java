@@ -1,6 +1,6 @@
 /*
 * This file is part of x264Batcher, an x264 encoder multiplier written in JavaFX.
-* Copyright (C) 2016 Vedran Matic
+* Copyright (C) 2016-2017 Vedran Matic
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 *
 */
-package org.matic.x264batcher.encoder.log;
+package org.matic.x264batcher.gui.log;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

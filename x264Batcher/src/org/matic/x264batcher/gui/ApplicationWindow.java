@@ -20,7 +20,6 @@
 package org.matic.x264batcher.gui;
 
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.Event;
@@ -36,23 +35,37 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 import org.matic.x264batcher.encoder.AvsParser;
 import org.matic.x264batcher.encoder.EncoderController;
 import org.matic.x264batcher.encoder.EncodingProgressListener;
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.ListViewEncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.ListViewEncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry;
 import org.matic.x264batcher.exception.EncoderException;
+import org.matic.x264batcher.gui.log.LogTabView;
 import org.matic.x264batcher.gui.model.ClipDimensionView;
 import org.matic.x264batcher.gui.model.QueuedJob;
-import org.matic.x264batcher.model.*;
+import org.matic.x264batcher.model.AvsInputFile;
+import org.matic.x264batcher.model.ClipDimension;
+import org.matic.x264batcher.model.EncoderJobParameters;
+import org.matic.x264batcher.model.EncoderParameters;
+import org.matic.x264batcher.model.EncoderPreset;
+import org.matic.x264batcher.model.EncodingProgressView;
+import org.matic.x264batcher.model.JobStatus;
 import org.matic.x264batcher.utils.Helper;
 
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -117,12 +130,9 @@ public final class ApplicationWindow implements EncodingProgressListener {
 	private final ProgressBar cpuProgressBar = new ProgressBar(0);
 	private final Label cpuProgressStatus = new Label();
 
-	private final ComboBox<LogEntry.Severity> logFilterCombo = new ComboBox<>();
 	private final ListView<EncoderPreset> encoderPresetsView = new ListView<>();
-	private final ListView<LogEntry> loggerView = new ListView<>();		
-	private final Button clearLogButton = new Button("Clear Log");
-	private final TextField logFilterField = new TextField();
-		
+	private final ListView<LogEntry> loggerView = new ListView<>();
+
 	private final EncoderLogger logger = new ListViewEncoderLogger(loggerView);
 	private final EncoderController encoderController = new EncoderController(logger);
 	private final TabPane tabPane = new TabPane();
@@ -130,7 +140,8 @@ public final class ApplicationWindow implements EncodingProgressListener {
 	private final Stage stage;
 
 	public ApplicationWindow(final Stage stage) {
-		this.stage = stage;	
+		this.stage = stage;
+
 		numberFormatter.setMaximumFractionDigits(2);
 		numberFormatter.setMinimumFractionDigits(2);
 		
@@ -236,15 +247,10 @@ public final class ApplicationWindow implements EncodingProgressListener {
 		
 		moveJobDownButton.setAlignment(Pos.CENTER_LEFT);
 		moveJobUpButton.setAlignment(Pos.CENTER_LEFT);
-		
-		logFilterCombo.getItems().setAll(LogEntry.Severity.values());
-		logFilterCombo.getSelectionModel().select(LogEntry.Severity.ALL);
-		
-		logFilterField.setPromptText("<type text to search for in the log>");
-		
+
 		cancelJobButton.setDisable(true);
 		cancelAllJobsButton.setDisable(true);
-		encodeButton.setDisable(true);
+		//encodeButton.setDisable(true);
 		removeJobButton.setDisable(true);
 		editJobButton.setDisable(true);
 		moveJobUpButton.setDisable(true);
@@ -280,7 +286,6 @@ public final class ApplicationWindow implements EncodingProgressListener {
 		jobTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
 		final Scene scene = new Scene(buildContentPane(), 950, 500);
-		
 		stage.setScene(scene);
 		stage.setOnCloseRequest(this::onShutdown);		
 		stage.setTitle("x264Batcher (Dev)");
@@ -325,7 +330,6 @@ public final class ApplicationWindow implements EncodingProgressListener {
 		setupEncoderOptionsActionHandlers();
 		setupJobQueueActionHandlers();
 		setupEncoderPresetActionHandlers();
-		setupLoggerActionHandlers();		
 	}
 	
 	private void setupJobQueueActionHandlers() {
@@ -355,13 +359,13 @@ public final class ApplicationWindow implements EncodingProgressListener {
 	private void setupEncoderOptionsActionHandlers() {
 		final List<ExtensionFilter> exeFileFilter = Collections.singletonList(new ExtensionFilter("Executables", "*.exe"));
 		x264ExecButton.setOnAction(e -> {
-			final List<File> selectedFile = Helper.showFileChooser(stage, "Select x264.exe", null, exeFileFilter, false);
+			final List<File> selectedFile = Helper.showOpenFileChooser(stage, "Select x264.exe", null, exeFileFilter, false);
 			if(selectedFile != null && selectedFile.size() == 1 && selectedFile.get(0) != null) {
 				x264ExecField.setText(selectedFile.get(0).getAbsolutePath());
 			}
 		});
 		mkvmergeExecButton.setOnAction(e -> {
-			final List<File> selectedFile = Helper.showFileChooser(stage, "Select mkvmerge.exe", null, exeFileFilter, false);
+			final List<File> selectedFile = Helper.showOpenFileChooser(stage, "Select mkvmerge.exe", null, exeFileFilter, false);
 			if(selectedFile != null && selectedFile.size() == 1 && selectedFile.get(0) != null) {
 				mkvmergeExecField.setText(selectedFile.get(0).getAbsolutePath());
 			}
@@ -383,47 +387,7 @@ public final class ApplicationWindow implements EncodingProgressListener {
 			}
 		});
 	}
-	
-	private void setupLoggerActionHandlers() {
-		loggerView.setCellFactory(c -> new ListCell<LogEntry>() {
-            @Override
-            protected void updateItem(final LogEntry logEntry, final boolean empty) {
-                super.updateItem(logEntry, empty);
-                if(logEntry != null) {
-                    super.setText(logEntry.toString());
-                    super.setStyle(logEntry.getStyle());
-                }
-                else {
-                    super.setText(null);
-                    super.setGraphic(null);
-                }
-            }
-        });
-		logFilterCombo.getSelectionModel().selectedItemProperty().addListener(
-			(obs, oldV, newV) -> {
-				final String filterText = logFilterField.getText(); 
-	        	if(filterText == null || filterText.length() == 0) {        		            
-		            logger.filter(newV);
-		        }
-		        else {
-		            logger.filter(newV, filterText);
-		        }
-			});		
-		logFilterField.textProperty().addListener(obs-> {
-        	final String filterText = logFilterField.getText(); 
-        	final LogEntry.Severity filterSeverity =
-        		logFilterCombo.getSelectionModel().getSelectedItem();
-        	if(filterText == null || filterText.length() == 0) {        		            
-	            logger.filter(filterSeverity);
-	        }
-	        else {
-	            logger.filter(filterSeverity, filterText);
-	        }
-        });        
-		clearLogButton.disableProperty().bind(Bindings.size(loggerView.getItems()).isEqualTo(0));
-		clearLogButton.setOnAction(e -> logger.clear());
-	}
-	
+
 	private void setupEncoderPresetActionHandlers() {
 		addPresetButton.setOnAction(e -> {
 			final EncoderPresetWindow addPresetWindow = new EncoderPresetWindow(stage, null);
@@ -589,8 +553,8 @@ public final class ApplicationWindow implements EncodingProgressListener {
 					super.setGraphic(null);
 				}
 				else {
-					//final QueuedJob item = this.getTableView().getItems().get(this.getTableRow().getIndex());
-					super.setText(valueConverter.apply((QueuedJob)super.getTableRow().getUserData()));
+					final QueuedJob item = this.getTableView().getItems().get(this.getTableRow().getIndex());
+					super.setText(valueConverter.apply(item));
 				}
 			}
 		};
@@ -598,7 +562,8 @@ public final class ApplicationWindow implements EncodingProgressListener {
 	}
 	
 	private Parent buildContentPane() {
-		tabPane.getTabs().addAll(buildEncoderTab(), buildJobsTab(), buildPresetsTab(), buildLogTab());
+		final LogTabView logTabView = new LogTabView(stage, loggerView, logger);
+		tabPane.getTabs().addAll(buildEncoderTab(), buildJobsTab(), buildPresetsTab(), logTabView.getTab());
 		
 		final BorderPane mainPane = new BorderPane();
 		mainPane.setCenter(tabPane);
@@ -674,48 +639,7 @@ public final class ApplicationWindow implements EncodingProgressListener {
 		
 		return jobsTab;
 	}
-	
-	private Tab buildLogTab() {		
-		final ScrollPane loggerViewScroll = new ScrollPane();
-        loggerViewScroll.setContent(loggerView);
-        loggerViewScroll.setFitToHeight(true);
-        loggerViewScroll.setFitToWidth(true);
-        
-		final BorderPane logPane = new BorderPane();
-		logPane.setTop(buildLogControlsPane());
-		logPane.setCenter(loggerViewScroll);
-		
-		BorderPane.setMargin(loggerViewScroll, new Insets(0, 5, 0, 5));
-		
-		final Tab logTab = new Tab("Log", logPane);
-		logTab.setClosable(false);
-		
-		return logTab;
-	}
-	
-	private Pane buildLogControlsPane() {
-		final HBox severityFilterPane = new HBox();
-		severityFilterPane.getChildren().addAll(new Label("Log level: "), logFilterCombo);
-		severityFilterPane.setAlignment(Pos.CENTER);
-		
-		final HBox fieldFilterPane = new HBox();
-		fieldFilterPane.getChildren().addAll(new Label("Search log: "), logFilterField);
-		fieldFilterPane.setAlignment(Pos.CENTER);
-		HBox.setHgrow(logFilterField, Priority.ALWAYS);
-		
-		final Insets controlsInsets = new Insets(5);
-		BorderPane.setMargin(severityFilterPane, controlsInsets);
-		BorderPane.setMargin(fieldFilterPane, controlsInsets);
-		BorderPane.setMargin(clearLogButton, controlsInsets);
 
-		final BorderPane logControlsPane = new BorderPane();
-		logControlsPane.setLeft(severityFilterPane);
-		logControlsPane.setCenter(fieldFilterPane);
-		logControlsPane.setRight(clearLogButton);
-
-		return logControlsPane;
-	}
-	
 	private Pane buildJobsPane() {
 		final BorderPane jobsPane = new BorderPane();
 		jobsPane.setTop(buildJobButtonsPane());
@@ -966,6 +890,7 @@ public final class ApplicationWindow implements EncodingProgressListener {
 					final QueuedJob jobView = new QueuedJob(jobParameters, inputFiles, targetClipDimension);
 					jobTable.getItems().add(jobView);
 					encoderController.add(jobView);
+					jobView.setStatus(JobStatus.QUEUED);
 				}
 			}
 			catch(final IOException | EncoderException e) {

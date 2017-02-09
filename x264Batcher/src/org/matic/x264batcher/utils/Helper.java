@@ -19,32 +19,34 @@
 */
 package org.matic.x264batcher.utils;
 
+import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
+import org.matic.ApplicationMain;
+import org.matic.x264batcher.model.EncoderPreset;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
-
-import org.matic.ApplicationMain;
-import org.matic.x264batcher.model.EncoderPreset;
-
-import javafx.scene.Node;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.input.DragEvent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
-import javafx.scene.control.ButtonType;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Window;
 
 /**
  * Various utility methods that are useful but don't belong to any specific class.
@@ -261,7 +263,7 @@ public final class Helper {
 	}
 
 	/**
-	 * Show a single file chooser window.
+	 * Show a file chooser window when opening file(s).
 	 * 
 	 * @param owner Parent window
 	 * @param title File chooser's window title
@@ -270,20 +272,31 @@ public final class Helper {
 	 * @param multiSelect Whether to allow multiple file selection
 	 * @return Selected file(s) or null if none were chosen
 	 */
-	public static List<File> showFileChooser(final Window owner, final String title,
-			final String initialPath, final List<ExtensionFilter> extensionFilters,
-			final boolean multiSelect) {
-		final FileChooser fileChooser = new FileChooser();		
+	public static List<File> showOpenFileChooser(final Window owner, final String title,
+		final String initialPath, final List<ExtensionFilter> extensionFilters,
+		final boolean multiSelect) {
+		final FileChooser fileChooser = initFileChooser(title, initialPath);
 		fileChooser.getExtensionFilters().addAll(extensionFilters);
-		fileChooser.setTitle(title);
-		if(initialPath != null) {
-			fileChooser.setInitialDirectory(new File(initialPath));
-		}
-		
+
 		return multiSelect? fileChooser.showOpenMultipleDialog(owner) :
 				Collections.singletonList(fileChooser.showOpenDialog(owner));
 	}
-	
+
+	/**
+	 * Show a file chooser window when saving a single file.
+	 *
+	 * @param owner Parent window
+	 * @param title File chooser's window title
+	 * @param initialPath Show contents of this path when opened
+	 * @return Selected file or null if none was chosen
+	 */
+	public static File showSaveFileChooser(final Window owner, final String title,
+		final String initialPath) {
+		final FileChooser fileChooser = initFileChooser(title, initialPath);
+
+		return fileChooser.showSaveDialog(owner);
+	}
+
 	/**
 	 * Show a directory chooser window.
 	 * 
@@ -336,5 +349,14 @@ public final class Helper {
         }
         
         dragEvent.consume();
+	}
+
+	private static FileChooser initFileChooser(final String title, final String initialPath) {
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle(title);
+		if(initialPath != null) {
+			fileChooser.setInitialDirectory(new File(initialPath));
+		}
+		return fileChooser;
 	}
 }

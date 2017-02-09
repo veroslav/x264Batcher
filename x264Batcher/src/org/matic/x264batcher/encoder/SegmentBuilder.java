@@ -27,9 +27,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.matic.x264batcher.encoder.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.EncoderLogger;
 import org.matic.x264batcher.gui.model.QueuedJob;
-import org.matic.x264batcher.model.*;
+import org.matic.x264batcher.model.AvsInputFile;
+import org.matic.x264batcher.model.AvsScriptCommand;
+import org.matic.x264batcher.model.AvsSegment;
+import org.matic.x264batcher.model.ClipDimension;
+import org.matic.x264batcher.model.EncoderParameters;
+import org.matic.x264batcher.model.MergedScript;
 
 /**
  * Builder of clip segments from the AVS scripts that are part of an encoding job.

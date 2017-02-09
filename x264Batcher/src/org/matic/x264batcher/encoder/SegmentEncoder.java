@@ -19,8 +19,8 @@
 */
 package org.matic.x264batcher.encoder;
 
-import org.matic.x264batcher.encoder.log.EncoderLogger;
-import org.matic.x264batcher.encoder.log.LogEntry.Severity;
+import org.matic.x264batcher.gui.log.EncoderLogger;
+import org.matic.x264batcher.gui.log.LogEntry.Severity;
 import org.matic.x264batcher.exception.EncoderException;
 import org.matic.x264batcher.model.SegmentEncoderResult;
 

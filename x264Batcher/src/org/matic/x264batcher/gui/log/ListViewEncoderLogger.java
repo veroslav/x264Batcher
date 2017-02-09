@@ -1,6 +1,6 @@
 /*
 * This file is part of x264Batcher, an x264 encoder multiplier written in JavaFX.
-* Copyright (C) 2016 Vedran Matic
+* Copyright (C) 2016-2017 Vedran Matic
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 *
 */
-package org.matic.x264batcher.encoder.log;
+package org.matic.x264batcher.gui.log;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -58,7 +58,7 @@ public final class ListViewEncoderLogger implements EncoderLogger {
 	}
 
 	/**
-	 * @see EncoderLogger#filter(org.matic.x264batcher.encoder.log.LogEntry.Severity)
+	 * @see EncoderLogger#filter(org.matic.x264batcher.gui.log.LogEntry.Severity)
 	 */
 	@Override
 	public void filter(final LogEntry.Severity severity) {
@@ -71,7 +71,7 @@ public final class ListViewEncoderLogger implements EncoderLogger {
 	}
 
 	/**
-	 * @see EncoderLogger#filter(org.matic.x264batcher.encoder.log.LogEntry.Severity, String)
+	 * @see EncoderLogger#filter(org.matic.x264batcher.gui.log.LogEntry.Severity, String)
 	 */
 	@Override
 	public void filter(final LogEntry.Severity severity, final String filterText) {
@@ -81,7 +81,7 @@ public final class ListViewEncoderLogger implements EncoderLogger {
 	}
 
 	/**
-	 * @see EncoderLogger#log(org.matic.x264batcher.encoder.log.LogEntry.Severity, String)
+	 * @see EncoderLogger#log(org.matic.x264batcher.gui.log.LogEntry.Severity, String)
 	 */
 	@Override
 	public void log(final LogEntry.Severity severity, final String content) {

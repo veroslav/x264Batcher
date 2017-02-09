@@ -173,7 +173,7 @@ final class JobSettingsWindow {
 			
 			final String initialFileChooserPath = Helper.loadPreference(
 					Helper.LAST_OUTPUT_PATH_PROPERTY, System.getProperty("user.home"));
-			final List<File> selectedOutputDir = Helper.showFileChooser(window.getOwner(), "Select AVS script(s)",
+			final List<File> selectedOutputDir = Helper.showOpenFileChooser(window.getOwner(), "Select AVS script(s)",
 					Files.exists(Paths.get(initialFileChooserPath))? initialFileChooserPath :
 						System.getProperty("user.home"), Arrays.asList(avsFileFilter, allFilesFilter), true);
 			if(selectedOutputDir != null && !selectedOutputDir.isEmpty()) {				

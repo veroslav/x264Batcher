@@ -226,5 +226,15 @@ public final class QueuedJob {
 	
 	public LongProperty timeCompletedProperty() {
 		return timeCompleted;
-	}	
+	}
+
+	@Override
+	public String toString() {
+		return "QueuedJob [encoderPreset=" + encoderPreset + ", outputPath=" + outputPath + ", outputSar=" + outputSar
+				+ ", message=" + message + ", status=" + status + ", name=" + name + ", deleteTemporaryFiles="
+				+ deleteTemporaryFiles + ", timeStarted=" + timeStarted + ", timeCompleted=" + timeCompleted
+				+ ", timeTaken=" + timeTaken + ", jobStatus=" + jobStatus + ", jobParameters=" + jobParameters
+				+ ", targetClipDimension=" + targetClipDimension + ", inputFiles=" + inputFiles + "]";
+	}
+	
 }
